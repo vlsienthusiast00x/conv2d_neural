@@ -2,19 +2,19 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
-#include "weights.h" 
-#include "input.h"     
+#include "weights.h"
+#include "input.h"
 
 
-#define INP_DIM        28     
-#define OUT_CH         8      
+#define INP_DIM        28
+#define OUT_CH         8
 #define KERNEL_H       3
 #define KERNEL_W       3
 #define STRIDE         1
-#define OUT_DIM        ((INP_DIM - KERNEL_H) / STRIDE + 1)   
-#define CONV_OUT_SIZE  (OUT_CH * OUT_DIM * OUT_DIM)         
-#define FC_OUT         10   
-#define POOL_DIM       (OUT_DIM / 2)  
+#define OUT_DIM        ((INP_DIM - KERNEL_H) / STRIDE + 1)
+#define CONV_OUT_SIZE  (OUT_CH * OUT_DIM * OUT_DIM)
+#define FC_OUT         10
+#define POOL_DIM       (OUT_DIM / 2)
 #define MAXPOOL_OUT    (OUT_CH * POOL_DIM * POOL_DIM)
 
 
