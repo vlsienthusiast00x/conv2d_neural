@@ -97,11 +97,109 @@ Predicted digit: 5
 
 ---
 
-## Future Work
+# Breakdown of the main program
 
-- Add support for multiple Conv2D layers.  
-- Implement UART output for digit prediction.  
-- Extend to full MNIST test set evaluation.  
+## C Inference Code Explanation (`main.c`)
+
+This file runs the exported MNIST Conv2D model on the VSDSquadron PRO board. It uses quantized weights and biases from `weights.h` and a sample input from `input.h`.
+
+### Key Definitions
+```c
+#define INP_DIM        28   // Input image size (28x28)
+#define OUT_CH         8    // Number of Conv2D filters
+#define KERNEL_H       3    // Kernel height
+#define KERNEL_W       3    // Kernel width
+#define STRIDE         1    // Convolution stride
+#define OUT_DIM        ((INP_DIM - KERNEL_H) / STRIDE + 1) // Conv output size = 26
+#define FC_OUT         10   // Dense layer outputs (digits 0–9)
+#define POOL_DIM       (OUT_DIM / 2)  // After 2x2 pooling → 13
+#define MAXPOOL_OUT    (OUT_CH * POOL_DIM * POOL_DIM) // Flattened size = 1352
 ```
 
-Would you like me to also add a **diagram** (ASCII or markdown table) showing the CNN architecture flow: `Input → Conv2D → MaxPool → Flatten → Dense → Output`? That would make the README more visually intuitive.
+These constants define the CNN architecture dimensions for inference.
+
+---
+
+### Conv2D + ReLU + MaxPooling
+```c
+void conv_relu_maxpool_2d_gray(const float *input, float *output,
+                               const int8_t *weights, const float *biases, float scale,
+                               int inp_dim, int out_ch,
+                               int kh, int kw, int stride, int pool_stride)
+```
+- Performs convolution with quantized weights.  
+- Adds bias and rescales using the quantization scale.  
+- Applies **ReLU activation** (negative values → 0).  
+- Applies **2×2 max pooling** to reduce spatial dimensions.  
+- Stores results in `maxpool_out`.
+
+---
+
+### Dense Layer
+```c
+void dense_layer(const int8_t *weights, const float *biases, float scale,
+                 const float *input, float *output,
+                 int in_size, int out_size, int apply_relu)
+```
+- Fully connected layer implementation.  
+- Multiplies input vector with quantized weights.  
+- Adds bias and rescales.  
+- Optionally applies ReLU.  
+- Stores results in `dense_out`.
+
+---
+
+### Argmax
+```c
+int argmax(const float *logits, int size)
+```
+- Finds the index of the maximum value in the output vector.  
+- This index corresponds to the predicted digit (0–9).
+
+---
+
+### Prediction Pipeline
+```c
+int predict(const float *input) {
+    conv_relu_maxpool_2d_gray(input, maxpool_out,
+                              conv1_weight, conv1_bias, conv1_scale,
+                              INP_DIM, OUT_CH,
+                              KERNEL_H, KERNEL_W, STRIDE, 2);
+
+    dense_layer(fc1_weight, fc1_bias, fc1_scale,
+                maxpool_out, dense_out, MAXPOOL_OUT, FC_OUT, 0);
+
+    return argmax(dense_out, FC_OUT);
+}
+```
+- Runs the Conv2D → MaxPool → Dense pipeline.  
+- Returns the predicted digit.
+
+---
+
+### Main Function
+```c
+int main(void) {
+    int predicted_digit = predict(input);
+    printf("Predicted digit: %d\n", predicted_digit);
+    return 0;
+}
+```
+- Calls `predict()` with the MNIST sample from `input.h`.  
+- Prints the predicted digit to the terminal.
+
+---
+
+### Summary
+- **Conv2D layer** extracts features from the 28×28 input image.  
+- **MaxPooling** reduces dimensionality.  
+- **Dense layer** maps features to digit classes (0–9).  
+- **Argmax** selects the most likely digit.  
+- The final output is printed as:
+
+```text
+Predicted digit: 5
+```
+
+---
+
