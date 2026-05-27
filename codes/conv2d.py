@@ -82,8 +82,9 @@ print(flattened.shape)  # should be (1, 1352)
 print(flattened[0, :20])  # first 20 values
 
 # --- Write one MNIST sample to input.h ---
-sample = x_train[7:8]          # shape: (1, 28, 28, 1)
-sample_label = y_train[7]
+idx = 7                        # Change this for input image  
+sample = x_train[idx:idx+1]          # shape: (1, 28, 28, 1)
+sample_label = y_train[idx]
 input_flat = sample[0, :, :, 0].astype(np.float32).flatten()
 
 with open("input.h", "w") as f:
