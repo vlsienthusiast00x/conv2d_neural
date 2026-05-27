@@ -52,23 +52,23 @@ with open("weights.h", "w") as f:
 
     # Conv2D
     f.write("// Conv2D layer: 8 filters, 3x3 kernel, 1 input channel\n")
-    f.write(f"const int8_t conv1_weight[{conv_w_flat.size}] = {{\n")
+    f.write(f"static const int8_t conv1_weight[{conv_w_flat.size}] = {{\n")
     f.write(",".join(map(str, conv_w_flat)))
     f.write("};\n\n")
-    f.write(f"const float conv1_bias[{conv_b_f.size}] = {{")
+    f.write(f"static const float conv1_bias[{conv_b_f.size}] = {{")
     f.write(",".join([f"{x:.6f}" for x in conv_b_f]))
     f.write("};\n\n")
-    f.write(f"const float conv1_scale = {conv_scale:.6f};\n\n")
+    f.write(f"static const float conv1_scale = {conv_scale:.6f};\n\n")
 
     # Dense
     f.write(f"// Dense layer: {MAXPOOL_OUT} inputs -> {FC_OUT} outputs\n")
-    f.write(f"const int8_t fc1_weight[{dense_w_flat.size}] = {{\n")
+    f.write(f"static const int8_t fc1_weight[{dense_w_flat.size}] = {{\n")
     f.write(",".join(map(str, dense_w_flat)))
     f.write("};\n\n")
-    f.write(f"const float fc1_bias[{dense_b_f.size}] = {{")
+    f.write(f"static const float fc1_bias[{dense_b_f.size}] = {{")
     f.write(",".join([f"{x:.6f}" for x in dense_b_f]))
     f.write("};\n\n")
-    f.write(f"const float fc1_scale = {dense_scale:.6f};\n\n")
+    f.write(f"static const float fc1_scale = {dense_scale:.6f};\n\n")
 
     f.write("#endif // WEIGHTS_H\n")
 
@@ -91,7 +91,7 @@ with open("input.h", "w") as f:
     f.write("#include <stdint.h>\n\n")
 
     f.write(f"// MNIST sample label: {sample_label}\n")
-    f.write(f"const float input[{input_flat.size}] = {{\n")
+    f.write(f"static const float input[{input_flat.size}] = {{\n")
 
     for i, x in enumerate(input_flat):
         f.write(f"{x:.8f}")
